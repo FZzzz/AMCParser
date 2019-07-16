@@ -1,4 +1,4 @@
-CFLAGS = -std=c++11 -Wall -O0
+CFLAGS = -std=c++11 -O0 -Wall
 
 all:
 	g++ $(CFLAGS) -c Character.cpp main.cpp ASFParser.cpp

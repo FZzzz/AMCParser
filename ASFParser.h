@@ -6,6 +6,7 @@
 #include <vector>
 #include <string>
 #include <sstream>
+#include <map>
 
 struct Root
 {
@@ -14,6 +15,7 @@ struct Root
     
     glm::vec3 position;
     glm::vec3 orientation;
+    std::vector<BoneNode*> children;
 };
 
 
@@ -31,9 +33,12 @@ private:
     void Parse_Header();
     void Parse_Root();
     void Parse_BoneData();
-    void Parse_Heirarchy();
+    void Create_Bone_Name_Map();
+    void Parse_Hierarchy();
+    void FetchRelation(std::stringstream&, std::vector<BoneNode*>&, BoneNode* parent=nullptr);
 
     void CleanUpLimitString(std::string&);
+    void PrintHierarchy();
     
     std::stringstream ss;
     std::string path;
@@ -47,6 +52,9 @@ private:
 
     Root root_info;
     std::vector<BoneData*> bone_datas;
+    std::vector<BoneNode*> bone_nodes;
+    std::map<std::string, BoneNode*> bone_name_map;
+
 
 };
 

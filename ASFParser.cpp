@@ -16,14 +16,9 @@ void ASFParser::ReadASF(std::string path)
     Parse_Header();
     Parse_Root();
     Parse_BoneData();
-    
-    for(size_t i = 0; i < bone_datas.size(); ++i)
-    {
-        std::cout << bone_datas[i]->name << std::endl;
-    }
-
-
-    Parse_Heirarchy();
+    Create_Bone_Name_Map();
+    Parse_Hierarchy();
+    //PrintHierarchy();
 }
 
 Character* ASFParser::Create_Character()
@@ -48,7 +43,6 @@ bool ASFParser::ReadFileContent()
     
     file.close();
     std::cout << "Load Success!\n";
-    //std::cout << file_content << std::endl;
     return true;
 }
 
@@ -72,7 +66,7 @@ void ASFParser::Parse_Header()
         line_ss.str(buf);
         line_ss >> token;
         
-        std::cout << token << "\n";
+        //std::cout << token << "\n";
 
         if(token == ":hierarchy")
             break;
@@ -89,7 +83,6 @@ void ASFParser::Parse_Header()
         else if(token == ":root")
         {
             std::cout << "Parse Root" << std::endl;
-            //Parse_Root();
             return;
         }
         else if (token == ":bonedata")
@@ -99,13 +92,10 @@ void ASFParser::Parse_Header()
                 assert((std::cout << "Error: bonedata without root!!\n"));
                 return;
             }
-            //Parse_BoneData();
         }
-
-        //std::cout << buf << std::endl;
     }
     
-    std::cout << buf << std::endl;
+    //std::cout << buf << std::endl;
 
 }
 
@@ -136,18 +126,18 @@ void ASFParser::Parse_Root()
             float x, y, z;
             line_ss >> x >> y >> z;
             this->root_info.position = glm::vec3(x,y,z);
-            std::cout << x << " " 
-                      << y << " " 
-                      << z << std::endl;
+            //std::cout << x << " " 
+            //          << y << " " 
+            //          << z << std::endl;
         }
         else if (keyword == "orientation")
         {
             float x, y, z;
             line_ss >> x >> y >> z;
             this->root_info.orientation = glm::vec3(x,y,z);
-            std::cout << x << " " 
-                      << y << " " 
-                      << z << std::endl;
+            //std::cout << x << " " 
+            //          << y << " " 
+            //          << z << std::endl;
         }
         else if (keyword == ":bonedata")
         {
@@ -173,145 +163,207 @@ void ASFParser::Parse_BoneData()
         line_ss.str(line_str);    
         line_ss >> keyword;
 
-        
-
         if(keyword == "begin")
         {
             is_illegal_format = true;
             bone = new BoneData();
         }
-        else if (keyword == "end")
+        else if (bone != nullptr)
         {
-            if(!is_illegal_format)
+            if (keyword == "end")
             {
-                assert((std::cout << "Found 'end' but without 'begin'\n"));
+                if(!is_illegal_format)
+                {
+                    assert((std::cout << "Found 'end' without 'begin'\n"));
+                    return;
+                }
+                assert(bone);
+                
+                BoneNode* node  = new BoneNode();
+                node->data = bone;
+                node->parent = nullptr;
+
+                bone_datas.push_back(bone);
+                bone_nodes.push_back(node);
+
+                is_illegal_format = false;
+            }
+            else if (keyword == "id")
+            {
+                line_ss >> bone->id;
+                //std::cout << "\nid " << bone->id << std::endl;
+            }
+            else if (keyword == "name")
+            {
+                line_ss >> bone->name;
+                //std::cout << bone->name << std::endl;
+            }
+            else if (keyword == "direction")
+            {
+                float x, y, z;
+                line_ss >> x >> y >> z;
+                bone->direction = glm::vec3(x,y,z);
+                //std::cout << x << " " 
+                //        << y << " " 
+                //        << z << std::endl;
+            }
+            else if (keyword == "length")
+            {
+                line_ss >> bone->length;
+                //std::cout << bone->length << std::endl;
+            }
+            else if (keyword == "axis")
+            {
+                float x, y, z;
+                std::string rotation_order;
+
+                line_ss >> x >> y >> z;
+                bone->euler_roataion_axis = glm::vec3(x,y,z);
+                //std::cout << x << " " 
+                //        << y << " " 
+                //        << z << std::endl;
+                line_ss >> rotation_order;
+                //std::cout << rotation_order << std::endl;
+            }
+            else if (keyword == "dof")
+            {
+                std::string dof_info;
+                while(line_ss >> dof_info)
+                {
+                    bone->dofs.push_back(dof_info);
+                }
+                /*
+                std::cout << "dofs\n";
+                for(size_t i=0;i < bone->dofs.size() ; ++i)
+                {
+                    std::cout << bone->dofs[i] << " ";
+                }
+                
+                std::cout << std::endl;
+                */
+            }
+            else if (keyword == "limits")
+            {
+                if(bone->dofs.size() == 0)
+                    continue;
+
+                for(size_t i = 0; i < bone->dofs.size(); ++i)
+                {
+                    std::string cleaned_str = "";
+                    if( i!=0 )
+                    {
+                        ss.getline(line_str, 128);
+                        line_ss.clear();
+                        line_ss.str(line_str);
+                        cleaned_str = line_ss.str();
+                    }
+                    else
+                    {
+                        std::string str1, str2;
+                        line_ss >> str1 >> str2;
+                        cleaned_str = str1 + " " + str2;
+                    }
+                        
+                
+                    CleanUpLimitString(cleaned_str);
+                    line_ss.clear();
+                    line_ss.str(cleaned_str);
+
+                    //std::cout << "Cleaned " << cleaned_str << std::endl;
+
+                    float min, max;
+                    line_ss >> min >> max;
+
+                    JointLimit limit;
+                    limit.min = min;
+                    limit.max = max;
+
+                    bone->joint_limit.push_back(limit);
+                    //std::cout << min << " " << max << std::endl;
+                }
+
+            }
+            else if (keyword == ":hierarchy")
+            {
                 return;
             }
-            bone_datas.push_back(bone);
-            is_illegal_format = false;
-        }
-        else if (keyword == "id")
-        {
-            line_ss >> bone->id;
-            std::cout << "\nid " << bone->id << std::endl;
-        }
-        else if (keyword == "name")
-        {
-            line_ss >> bone->name;
-            std::cout << bone->name << std::endl;
-        }
-        else if (keyword == "direction")
-        {
-            float x, y, z;
-            line_ss >> x >> y >> z;
-            bone->direction = glm::vec3(x,y,z);
-            std::cout << x << " " 
-                      << y << " " 
-                      << z << std::endl;
-        }
-        else if (keyword == "length")
-        {
-            line_ss >> bone->length;
-            std::cout << bone->length << std::endl;
-        }
-        else if (keyword == "axis")
-        {
-            float x, y, z;
-            std::string rotation_order;
-
-            line_ss >> x >> y >> z;
-            bone->euler_roataion_axis = glm::vec3(x,y,z);
-            std::cout << x << " " 
-                      << y << " " 
-                      << z << std::endl;
-            line_ss >> rotation_order;
-            std::cout << rotation_order << std::endl;
-        }
-        else if (keyword == "dof")
-        {
-            std::string dof_info;
-            while(line_ss >> dof_info)
+            else
             {
-                bone->dofs.push_back(dof_info);
+                std::cout << "Error Unrecoginized Keyword " << keyword << std::endl;
             }
-            std::cout << "dofs\n";
-            for(size_t i=0;i < bone->dofs.size() ; ++i)
-            {
-                std::cout << bone->dofs[i] << " ";
-            }
-            std::cout << std::endl;
         }
-        else if (keyword == "limits")
-        {
-            if(bone->dofs.size() == 0)
-                continue;
-/*
-            std::string cleaned_str;
-            line_ss << cleaned_str;
-            
-            CleanUpLimitString(cleaned_str);
-            line_ss.clear();
-            line_ss.str(cleaned_str);
-
-            float min, max;
-            line_ss >> min >> max;
-*/          
-            std::cout << "limits\n";
-            for(size_t i = 0; i < bone->dofs.size(); ++i)
-            {
-                std::string cleaned_str = "";
-                if( i!=0 )
-                {
-                    ss.getline(line_str, 128);
-                    line_ss.clear();
-                    line_ss.str(line_str);
-                    cleaned_str = line_ss.str();
-                    //std::cout << "Line: " << line_str << std::endl;
-                }
-                else
-                {
-                    std::string str1, str2;
-                    line_ss >> str1 >> str2;
-                    cleaned_str = str1 + " " + str2;
-                }
-                
-                
-            
-                CleanUpLimitString(cleaned_str);
-                line_ss.clear();
-                line_ss.str(cleaned_str);
-
-                //std::cout << "Cleaned " << cleaned_str << std::endl;
-
-                float min, max;
-                line_ss >> min >> max;
-
-                JointLimit limit;
-                limit.min = min;
-                limit.max = max;
-
-                bone->joint_limit.push_back(limit);
-                std::cout << min << " " << max << std::endl;
-            }
-
-        }
-        else if (keyword == ":hierarchy")
-        {
-            std::cout << "Parse Hierarchy\n";
-            return;
-        }
-        else
-        {
-            std::cout << "Error Unrecoginized Keyword " << keyword << std::endl;
-        }
+        
 
     }
 }
 
-void ASFParser::Parse_Heirarchy()
+void ASFParser::Create_Bone_Name_Map()
 {
-
+    for(size_t i = 0; i<bone_nodes.size(); ++i)
+    {
+        bone_name_map.emplace(bone_nodes[i]->data->name, 
+                                bone_nodes[i]);
+    }
 }
+
+
+void ASFParser::Parse_Hierarchy()
+{
+    std::cout << "Parse Hierarchy " << bone_name_map.size() << "\n";
+    
+    std::stringstream line_ss;
+    char line_str[128];
+    bool is_illegal_format = false;
+
+    while(ss.getline(line_str, 128))
+    {
+        std::string keyword;
+        
+        line_ss.clear();
+        line_ss.str(line_str);    
+        line_ss >> keyword;
+
+        if(keyword == "begin")
+        {
+            is_illegal_format = true;
+        }
+        else if (keyword == "end")
+        {
+            if(is_illegal_format)
+                break;
+                
+        }
+        else if(keyword == "root")
+        {
+            FetchRelation(line_ss, this->root_info.children);        
+        }
+        else
+        {
+            //std::cout << "\n" << keyword << " ";
+            auto bone_iter = bone_name_map.find(keyword);
+            if(bone_iter != bone_name_map.cend())
+                FetchRelation(line_ss, bone_iter->second->child, bone_iter->second);
+        }
+    }
+}
+
+void ASFParser::FetchRelation(std::stringstream &line_ss, 
+                              std::vector<BoneNode*>& list,
+                              BoneNode* parent)
+{
+    std::string child_name="";
+    while(line_ss >> child_name)
+    {
+        //std::cout << child_name << "-";
+        auto bone_iter = bone_name_map.find(child_name);
+        if(bone_iter != bone_name_map.cend())
+        {
+            bone_iter->second->parent = parent;
+            list.push_back(bone_iter->second);
+        }
+    }
+} 
+
 
 void ASFParser::CleanUpLimitString(std::string& input)
 {
@@ -324,3 +376,17 @@ void ASFParser::CleanUpLimitString(std::string& input)
                             ')' ));
 }
 
+void ASFParser::PrintHierarchy()
+{
+    std::cout << "\n";
+    for(size_t i = 0; i<bone_nodes.size();++i)
+    {
+        std::cout << bone_nodes[i]->data->name << " ";
+        for(size_t j = 0; j<bone_nodes[i]->child.size(); ++j)
+        {
+            std::cout << bone_nodes[i]->child[j]->data->name << " ";
+        }
+        std::cout << "----\n";
+        
+    }
+}

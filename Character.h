@@ -33,9 +33,8 @@ struct BoneNode
 {
     BoneData* data;
     BoneNode* parent;
-    BoneNode* child;
+    std::vector<BoneNode*> child;
 };
-
 
 class Character
 {
