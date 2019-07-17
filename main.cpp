@@ -10,8 +10,7 @@ int main()
     ASFParser* skeleton_parser = new ASFParser();
     skeleton_parser->ReadASF("./Asset/walk.asf");
 
-    Character* character = new Character();
-    character->SetBones();
+    Character* character = skeleton_parser->Create_Character();
     
     return 0;
 }

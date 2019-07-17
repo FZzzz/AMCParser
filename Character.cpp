@@ -1,22 +1,31 @@
 #include "Character.h"
 #include <iostream>
 
-Character::Character() : root(nullptr), name(""), mass(0)
+Character::Character() : root_(nullptr), name_("")
 {
 
 }
 
-void Character::SetBones()
+void Character::SetSkeletal(const Root* const root,
+                     const std::vector<BoneData*>& bone_data,
+                     const std::vector<BoneNode*>& bone_node_list,
+                     const std::map<std::string, BoneNode*>& bone_name_map)
 {
-    std::cout << "Setting Bones" << std::endl;
+    assert(root);
+    assert(bone_data.size()>0);
+    assert(bone_node_list.size()>0);
+    assert(bone_name_map.size()>0);
+
+    // Create root node using copy constructor
+    this->root_ = new Root(*root);
+    // TODO: relink children 
+    // (Copy constructer "does not" copy the children!!)
+    // I am starving
+
 }
 
-inline void Character::SetName(std::string)
-{
-    this->name = name;
-}
 
-inline void Character::SetMass(float mass)
+void Character::SetName(const std::string &name)
 {
-    this->mass = mass;
+    this->name_ = name;
 }

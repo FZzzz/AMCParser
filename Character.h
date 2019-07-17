@@ -4,6 +4,7 @@
 #include <string>
 #include <glm/common.hpp>
 #include <vector>
+#include <map>
 
 struct JointLimit
 {
@@ -36,18 +37,39 @@ struct BoneNode
     std::vector<BoneNode*> child;
 };
 
+struct Root
+{
+    Root(){};
+    Root(const Root& r): order(r.order), 
+                         axis(r.axis),
+                         position(r.position),
+                         orientation(r.orientation)
+    {}
+
+    std::string order;
+    std::string axis;
+    
+    glm::vec3 position;
+    glm::vec3 orientation;
+    std::vector<BoneNode*> children;
+};
+
+
 class Character
 {
 public:
     Character();
-    void SetBones();
-    inline void SetName(std::string);
-    inline void SetMass(float);
+    void SetSkeletal(const Root* const,
+                     const std::vector<BoneData*>&,
+                     const std::vector<BoneNode*>&,
+                     const std::map<std::string, BoneNode*>&);
+    void SetName(const std::string&);
+    
 private:
-    BoneNode* root;
-    std::string name;
-    float mass;
-    float length;
+    
+    std::map<std::string, BoneNode*> bone_name_map_;
+    Root* root_;
+    std::string name_;
 };
 
 #endif

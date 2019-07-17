@@ -4,14 +4,19 @@
 #include <iostream>
 #include <fstream>
 
-ASFParser::ASFParser() : have_root(false)
+ASFParser::ASFParser() : have_root_(false), root_info_(nullptr)
+{
+
+}
+
+ASFParser::~ASFParser()
 {
 
 }
 
 void ASFParser::ReadASF(std::string path)
 {
-    this->path = path;
+    this->path_ = path;
     ReadFileContent();
     Parse_Header();
     Parse_Root();
@@ -23,13 +28,23 @@ void ASFParser::ReadASF(std::string path)
 
 Character* ASFParser::Create_Character()
 {
-    return new Character();
+    std::cout << "Create Character\n";
+    // Since the member of ASFParser will be deleted after then...
+    // "Copy" node value and assign them to Character object
+    Character* character = new Character();
+    character->SetName(name_);
+    character->SetSkeletal(root_info_, 
+                           bone_datas_, 
+                           bone_nodes_, 
+                           bone_name_map_);
+
+    return character;
 }
 
 bool ASFParser::ReadFileContent()
 {
     std::cout << "Read File Content..." << std::endl;
-    std::ifstream file(path.c_str(), std::ios::in);
+    std::ifstream file(path_.c_str(), std::ios::in);
 
     if(!file || !file.is_open())
     {
@@ -39,7 +54,7 @@ bool ASFParser::ReadFileContent()
     // Access whole file content
     std::stringstream buffer;
     buffer << file.rdbuf();
-    file_content = buffer.str();
+    file_content_ = buffer.str();
     
     file.close();
     std::cout << "Load Success!\n";
@@ -53,9 +68,9 @@ void ASFParser::Parse_Header()
     std::stringstream line_ss;
     char buf[128];
 
-    ss << file_content;
+    ss_ << file_content_;
     
-    while(ss.getline(buf,128))
+    while(ss_.getline(buf,128))
     {
         if(buf[0] == '#')
             continue;
@@ -73,12 +88,12 @@ void ASFParser::Parse_Header()
         else if(token == ":version")
         {
             line_ss >> info_buf;
-            this->version = info_buf;
+            this->version_ = info_buf;
         }
         else if(token == ":name")
         {
             line_ss >> info_buf;
-            this->name = info_buf;
+            this->name_ = info_buf;
         }
         else if(token == ":root")
         {
@@ -87,7 +102,7 @@ void ASFParser::Parse_Header()
         }
         else if (token == ":bonedata")
         {
-            if(!have_root)
+            if(!have_root_)
             {
                 assert((std::cout << "Error: bonedata without root!!\n"));
                 return;
@@ -105,7 +120,9 @@ void ASFParser::Parse_Root()
     std::stringstream line_ss;
     char line_str[128];
 
-    while(ss.getline(line_str, 128))
+    root_info_ = new Root();
+    
+    while(ss_.getline(line_str, 128))
     {
         std::string keyword;
 
@@ -115,17 +132,17 @@ void ASFParser::Parse_Root()
 
         if(keyword == "order")
         {
-            line_ss >> this->root_info.order;  
+            line_ss >> this->root_info_->order;  
         }
         else if (keyword == "axis")
         {
-            line_ss >> this->root_info.axis;
+            line_ss >> this->root_info_->axis;
         }
         else if (keyword == "position")
         {
             float x, y, z;
             line_ss >> x >> y >> z;
-            this->root_info.position = glm::vec3(x,y,z);
+            this->root_info_->position = glm::vec3(x,y,z);
             //std::cout << x << " " 
             //          << y << " " 
             //          << z << std::endl;
@@ -134,7 +151,7 @@ void ASFParser::Parse_Root()
         {
             float x, y, z;
             line_ss >> x >> y >> z;
-            this->root_info.orientation = glm::vec3(x,y,z);
+            this->root_info_->orientation = glm::vec3(x,y,z);
             //std::cout << x << " " 
             //          << y << " " 
             //          << z << std::endl;
@@ -154,7 +171,7 @@ void ASFParser::Parse_BoneData()
     bool is_illegal_format = false;
 
     BoneData* bone = nullptr;
-    while(ss.getline(line_str, 128))
+    while(ss_.getline(line_str, 128))
     {
         std::string keyword;
         
@@ -183,8 +200,8 @@ void ASFParser::Parse_BoneData()
                 node->data = bone;
                 node->parent = nullptr;
 
-                bone_datas.push_back(bone);
-                bone_nodes.push_back(node);
+                bone_datas_.push_back(bone);
+                bone_nodes_.push_back(node);
 
                 is_illegal_format = false;
             }
@@ -252,7 +269,7 @@ void ASFParser::Parse_BoneData()
                     std::string cleaned_str = "";
                     if( i!=0 )
                     {
-                        ss.getline(line_str, 128);
+                        ss_.getline(line_str, 128);
                         line_ss.clear();
                         line_ss.str(line_str);
                         cleaned_str = line_ss.str();
@@ -299,23 +316,23 @@ void ASFParser::Parse_BoneData()
 
 void ASFParser::Create_Bone_Name_Map()
 {
-    for(size_t i = 0; i<bone_nodes.size(); ++i)
+    for(size_t i = 0; i<bone_nodes_.size(); ++i)
     {
-        bone_name_map.emplace(bone_nodes[i]->data->name, 
-                                bone_nodes[i]);
+        bone_name_map_.emplace(bone_nodes_[i]->data->name, 
+                                bone_nodes_[i]);
     }
 }
 
 
 void ASFParser::Parse_Hierarchy()
 {
-    std::cout << "Parse Hierarchy " << bone_name_map.size() << "\n";
+    std::cout << "Parse Hierarchy " << bone_name_map_.size() << "\n";
     
     std::stringstream line_ss;
     char line_str[128];
     bool is_illegal_format = false;
 
-    while(ss.getline(line_str, 128))
+    while(ss_.getline(line_str, 128))
     {
         std::string keyword;
         
@@ -335,13 +352,13 @@ void ASFParser::Parse_Hierarchy()
         }
         else if(keyword == "root")
         {
-            FetchRelation(line_ss, this->root_info.children);        
+            FetchRelation(line_ss, this->root_info_->children);        
         }
         else
         {
             //std::cout << "\n" << keyword << " ";
-            auto bone_iter = bone_name_map.find(keyword);
-            if(bone_iter != bone_name_map.cend())
+            auto bone_iter = bone_name_map_.find(keyword);
+            if(bone_iter != bone_name_map_.cend())
                 FetchRelation(line_ss, bone_iter->second->child, bone_iter->second);
         }
     }
@@ -355,8 +372,8 @@ void ASFParser::FetchRelation(std::stringstream &line_ss,
     while(line_ss >> child_name)
     {
         //std::cout << child_name << "-";
-        auto bone_iter = bone_name_map.find(child_name);
-        if(bone_iter != bone_name_map.cend())
+        auto bone_iter = bone_name_map_.find(child_name);
+        if(bone_iter != bone_name_map_.cend())
         {
             bone_iter->second->parent = parent;
             list.push_back(bone_iter->second);
@@ -378,15 +395,15 @@ void ASFParser::CleanUpLimitString(std::string& input)
 
 void ASFParser::PrintHierarchy()
 {
-    std::cout << "\n";
-    for(size_t i = 0; i<bone_nodes.size();++i)
+    std::cout << "\nHierarchy\n";
+    for(size_t i = 0; i<bone_nodes_.size();++i)
     {
-        std::cout << bone_nodes[i]->data->name << " ";
-        for(size_t j = 0; j<bone_nodes[i]->child.size(); ++j)
+        std::cout << bone_nodes_[i]->data->name << " ";
+        for(size_t j = 0; j<bone_nodes_[i]->child.size(); ++j)
         {
-            std::cout << bone_nodes[i]->child[j]->data->name << " ";
+            std::cout << bone_nodes_[i]->child[j]->data->name << " ";
         }
-        std::cout << "----\n";
+        std::cout << "\n";
         
     }
 }
