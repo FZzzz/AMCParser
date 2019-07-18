@@ -11,6 +11,22 @@ ASFParser::ASFParser() : have_root_(false), root_info_(nullptr)
 
 ASFParser::~ASFParser()
 {
+    bone_name_map_.clear();
+
+    for(auto it = bone_nodes_.begin(); it != bone_nodes_.end(); ++it)
+    {
+        delete (*it);
+    }
+    bone_nodes_.clear();
+
+    for(auto it = bone_datas_.begin(); it != bone_datas_.end(); ++it)
+    {
+        delete (*it);
+    }
+    bone_datas_.clear();
+
+    delete root_info_;
+    root_info_ = nullptr;
 
 }
 

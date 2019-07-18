@@ -12,5 +12,11 @@ int main()
 
     Character* character = skeleton_parser->Create_Character();
     
+    delete skeleton_parser;
+    delete character;
+
+    skeleton_parser = nullptr;
+    character = nullptr;
+
     return 0;
 }

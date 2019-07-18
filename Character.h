@@ -14,6 +14,18 @@ struct JointLimit
 
 struct BoneData
 {
+    BoneData(){};
+    BoneData(const BoneData& b): id(b.id),
+                                  name(b.name),
+                                  direction(b.direction),
+                                  length(b.length),
+                                  euler_roataion_axis(b.euler_roataion_axis),
+                                  rotation_order(b.rotation_order),
+                                  dofs(b.dofs),
+                                  joint_limit(b.joint_limit)
+    {
+
+    };
     int id;
     std::string name;
     glm::vec3 direction;
@@ -32,6 +44,8 @@ struct BoneNode;
 // Bidirectional
 struct BoneNode
 {
+    BoneNode():data(nullptr), parent(nullptr){};
+    BoneNode(BoneData* input):data(input),parent(nullptr){};
     BoneData* data;
     BoneNode* parent;
     std::vector<BoneNode*> child;
@@ -44,7 +58,7 @@ struct Root
                          axis(r.axis),
                          position(r.position),
                          orientation(r.orientation)
-    {}
+    {};
 
     std::string order;
     std::string axis;
@@ -59,14 +73,17 @@ class Character
 {
 public:
     Character();
+    ~Character();
     void SetSkeletal(const Root* const,
                      const std::vector<BoneData*>&,
                      const std::vector<BoneNode*>&,
                      const std::map<std::string, BoneNode*>&);
     void SetName(const std::string&);
-    
+    inline std::string GetName(){return name_;};
+
 private:
-    
+    std::vector<BoneNode*> bone_nodes_;
+    std::vector<BoneData*> bone_data_;
     std::map<std::string, BoneNode*> bone_name_map_;
     Root* root_;
     std::string name_;
