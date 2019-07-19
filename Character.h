@@ -3,6 +3,7 @@
 
 #include <string>
 #include <glm/common.hpp>
+#include <glm/gtc/quaternion.hpp>
 #include <vector>
 #include <map>
 
@@ -68,6 +69,18 @@ struct Root
     std::vector<BoneNode*> children;
 };
 
+// DO NOT store euler angle, even asf provide euler angle
+struct KeyframeState
+{
+    KeyframeState(){};
+    KeyframeState(glm::vec3 trans, glm::quat rot) 
+        : translation(trans), rotation(rot){};
+
+    glm::vec3 translation;
+    glm::quat rotation;
+};
+
+typedef std::map<std::string, std::vector<KeyframeState*>> BoneNameFrameMap;
 
 class Character
 {
@@ -78,15 +91,20 @@ public:
                      const std::vector<BoneData*>&,
                      const std::vector<BoneNode*>&,
                      const std::map<std::string, BoneNode*>&);
+    void SetKeyframes(const BoneNameFrameMap&);
+
     void SetName(const std::string&);
     inline std::string GetName(){return name_;};
 
 private:
+    std::string name_;
+
     std::vector<BoneNode*> bone_nodes_;
     std::vector<BoneData*> bone_data_;
     std::map<std::string, BoneNode*> bone_name_map_;
     Root* root_;
-    std::string name_;
+
+    std::vector<KeyframeState*> keyframes_; 
 };
 
 #endif

@@ -17,6 +17,10 @@ public:
     void ReadASF(std::string);
 
     Character* Create_Character();
+    inline const std::map<std::string, BoneNode*>& GetBoneNameMap()
+    {
+        return bone_name_map_;
+    }
 
 private:
     

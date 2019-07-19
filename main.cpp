@@ -18,5 +18,10 @@ int main()
     skeleton_parser = nullptr;
     character = nullptr;
 
+    glm::vec3 v(1,2,3);
+    v.y = 5;
+    std::cout << v.x << ", " << v.y << ", " << v.z << "\n";
+    std::cout << v.r << ", " << v.g << ", " << v.b << "\n";
+
     return 0;
 }
