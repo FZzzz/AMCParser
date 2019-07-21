@@ -13,6 +13,18 @@ struct JointLimit
     float max;
 };
 
+enum DOF_ENUM
+{
+    DOF_NONE,
+    DOF_RX,
+    DOF_RY,
+    DOF_RZ,
+    DOF_RX_RY,
+    DOF_RY_RZ,
+    DOF_RX_RZ,
+    DOF_RX_RY_RZ,
+};
+
 struct BoneData
 {
     BoneData(){};
@@ -20,7 +32,7 @@ struct BoneData
                                   name(b.name),
                                   direction(b.direction),
                                   length(b.length),
-                                  euler_roataion_axis(b.euler_roataion_axis),
+                                  euler_roataion_degree(b.euler_roataion_degree),
                                   rotation_order(b.rotation_order),
                                   dofs(b.dofs),
                                   joint_limit(b.joint_limit)
@@ -31,10 +43,11 @@ struct BoneData
     std::string name;
     glm::vec3 direction;
     float length;
-    glm::vec3 euler_roataion_axis;
+    glm::vec3 euler_roataion_degree;
     std::string rotation_order;
     
     // Map? Fixed array? Max 6
+    DOF_ENUM dof_type;
     std::vector<std::string> dofs;
     std::vector<JointLimit> joint_limit;
 
@@ -75,6 +88,9 @@ struct KeyframeState
     KeyframeState(){};
     KeyframeState(glm::vec3 trans, glm::quat rot) 
         : translation(trans), rotation(rot){};
+    //Copy constructor
+    KeyframeState(const KeyframeState& state) 
+        : translation(state.translation), rotation(state.rotation){};
 
     glm::vec3 translation;
     glm::quat rotation;
@@ -95,6 +111,8 @@ public:
 
     void SetName(const std::string&);
     inline std::string GetName(){return name_;};
+    inline const std::map<std::string, BoneNode*>& GetBoneNameMap()
+    {return bone_name_map_;}
 
 private:
     std::string name_;
@@ -104,7 +122,8 @@ private:
     std::map<std::string, BoneNode*> bone_name_map_;
     Root* root_;
 
-    std::vector<KeyframeState*> keyframes_; 
+    std::vector<KeyframeState*> root_keyframes_;
+    BoneNameFrameMap keyframes_; 
 };
 
 #endif

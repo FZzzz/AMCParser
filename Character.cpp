@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <map>
 
-Character::Character() : root_(nullptr), name_("Anonymous")
+Character::Character() : name_("Anonymous"), root_(nullptr)
 {
 
 }
@@ -92,6 +92,25 @@ void Character::SetSkeletal(const Root* const root,
             bone_nodes_[i]->parent = parent_node;            
         }
     }
+}
+
+void Character::SetKeyframes(const BoneNameFrameMap& input)
+{
+    for(auto it = input.cbegin(); it != input.cend(); ++it)
+    {
+        auto input_frames = it->second;
+        std::vector<KeyframeState*> frames;
+        for(size_t i =0 ; i < input_frames.size(); ++i)
+        {
+            KeyframeState* state = new KeyframeState( (*input_frames[i]) );
+            frames.push_back(state);
+        }
+
+        keyframes_.emplace(it->first, frames);        
+    }
+
+    // Cache out root keyframes
+    root_keyframes_ = keyframes_["root"];
 }
 
 void Character::SetName(const std::string &name)

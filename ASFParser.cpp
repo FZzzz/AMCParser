@@ -37,6 +37,7 @@ void ASFParser::ReadASF(std::string path)
     Parse_Header();
     Parse_Root();
     Parse_BoneData();
+    Determine_DOF_Types();
     Create_Bone_Name_Map();
     Parse_Hierarchy();
     //PrintHierarchy();
@@ -251,7 +252,7 @@ void ASFParser::Parse_BoneData()
                 std::string rotation_order;
 
                 line_ss >> x >> y >> z;
-                bone->euler_roataion_axis = glm::vec3(x,y,z);
+                bone->euler_roataion_degree = glm::vec3(x,y,z);
                 //std::cout << x << " " 
                 //        << y << " " 
                 //        << z << std::endl;
@@ -328,6 +329,37 @@ void ASFParser::Parse_BoneData()
         
 
     }
+}
+
+void ASFParser::Determine_DOF_Types()
+{
+    std::string buf="";
+    for(auto it = bone_datas_.cbegin(); it != bone_datas_.cend(); ++it)
+    {
+        for(size_t i = 0; i < (*it)->dofs.size(); ++i)
+        {
+            buf += (*it)->dofs[i];
+        }        
+
+        if(buf == "rx")
+            (*it)->dof_type = DOF_ENUM::DOF_RX;
+        else if(buf == "ry")
+            (*it)->dof_type = DOF_ENUM::DOF_RY;
+        else if(buf == "rz")
+            (*it)->dof_type = DOF_ENUM::DOF_RZ;
+        else if(buf == "rxry")
+            (*it)->dof_type = DOF_ENUM::DOF_RX_RY;
+        else if(buf == "ryrz")
+            (*it)->dof_type = DOF_ENUM::DOF_RY_RZ;
+        else if(buf == "rxrz")
+            (*it)->dof_type = DOF_ENUM::DOF_RX_RZ;
+        else if(buf == "rxryrz")
+            (*it)->dof_type = DOF_ENUM::DOF_RX_RY_RZ;
+        else
+            (*it)->dof_type = DOF_ENUM::DOF_NONE;
+                
+    }
+
 }
 
 void ASFParser::Create_Bone_Name_Map()

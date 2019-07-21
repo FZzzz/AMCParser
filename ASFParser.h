@@ -29,7 +29,10 @@ private:
     void Parse_Header();
     void Parse_Root();
     void Parse_BoneData();
+    
+    void Determine_DOF_Types();
     void Create_Bone_Name_Map();
+
     void Parse_Hierarchy();
     void FetchRelation(std::stringstream&, std::vector<BoneNode*>&, BoneNode* parent=nullptr);
 
