@@ -34,6 +34,7 @@ struct BoneData
                                   length(b.length),
                                   euler_roataion_degree(b.euler_roataion_degree),
                                   rotation_order(b.rotation_order),
+                                  dof_type(b.dof_type),
                                   dofs(b.dofs),
                                   joint_limit(b.joint_limit)
     {

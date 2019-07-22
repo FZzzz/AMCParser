@@ -2,6 +2,7 @@
 #include <fstream>
 #include "Character.h"
 #include "ASFParser.h"
+#include "AMCParser.h"
 
 int main()
 {
@@ -12,16 +13,17 @@ int main()
 
     Character* character = skeleton_parser->Create_Character();
     
+    AMCParser* anim_parser = new AMCParser();
+    anim_parser->ReadAMC("./Asset/walk_01.amc");
+    anim_parser->SetCharacterKeyFrames(character);
+
     delete skeleton_parser;
+    delete anim_parser;
     delete character;
 
     skeleton_parser = nullptr;
+    anim_parser = nullptr;
     character = nullptr;
-
-    glm::vec3 v(1,2,3);
-    v.y = 5;
-    std::cout << v.x << ", " << v.y << ", " << v.z << "\n";
-    std::cout << v.r << ", " << v.g << ", " << v.b << "\n";
 
     return 0;
 }

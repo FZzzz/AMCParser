@@ -4,6 +4,7 @@
 #include "Character.h"
 #include <map>
 #include <vector>
+#include <sstream>
 
 using NameDOFMap = std::map<std::string, std::vector<std::vector<float>>>;
 

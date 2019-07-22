@@ -68,7 +68,7 @@ void Character::SetSkeletal(const Root* const root,
     for(size_t i = 0; i<bone_nodes_.size(); ++i)
     {
         BoneNode* ref_node = bone_node_list[i];
-        std::cout << ref_node->data->name << std::endl;
+        //std::cout << ref_node->data->name << std::endl;
         
         // child
         for(auto iter = ref_node->child.begin(); 

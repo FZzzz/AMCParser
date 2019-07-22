@@ -336,10 +336,13 @@ void ASFParser::Determine_DOF_Types()
     std::string buf="";
     for(auto it = bone_datas_.cbegin(); it != bone_datas_.cend(); ++it)
     {
+        buf.clear();
         for(size_t i = 0; i < (*it)->dofs.size(); ++i)
         {
             buf += (*it)->dofs[i];
         }        
+
+        //std::cout << (*it)->name << " " << buf << " ";
 
         if(buf == "rx")
             (*it)->dof_type = DOF_ENUM::DOF_RX;
@@ -357,7 +360,8 @@ void ASFParser::Determine_DOF_Types()
             (*it)->dof_type = DOF_ENUM::DOF_RX_RY_RZ;
         else
             (*it)->dof_type = DOF_ENUM::DOF_NONE;
-                
+
+        //std::cout << (*it)->dof_type << "\n";// << buf << " ";
     }
 
 }

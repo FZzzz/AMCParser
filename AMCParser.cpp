@@ -30,16 +30,18 @@ void AMCParser::SetCharacterKeyFrames(Character* character)
     if(character == nullptr)
         return;
     // check mapping keys all exist in character
+    //std::cout << "Set Keyframes " << raw_name_dof_map_.size() << "\n";
     auto character_map = character->GetBoneNameMap();
     bool status = true;
     for(auto it = raw_name_dof_map_.cbegin();
              it != raw_name_dof_map_.cend();
              ++it)
     {
+        //std::cout << it->first << std::endl;
         if(it->first == "root")
             continue;
         auto find_it = character_map.find(it->first);
-        status &= (find_it != character_map.end()) ? true: false;
+        status &= (find_it != character_map.end());
     }
 
     // stop if not match
@@ -50,9 +52,11 @@ void AMCParser::SetCharacterKeyFrames(Character* character)
              it != raw_name_dof_map_.cend();
              ++it)
     {
+        //std::cout << it->first << std::endl;
         if(it->first == "root")
         {
             SetKeyframeStates(it->first, DOF_ENUM::DOF_NONE);
+            continue;
         }
         auto target = character_map.find(it->first);
         SetKeyframeStates(it->first, target->second->data->dof_type);
@@ -64,7 +68,7 @@ void AMCParser::SetCharacterKeyFrames(Character* character)
 
 bool AMCParser::ReadFileContent()
 {
-    std::cout << "Read File Content..." << std::endl;
+    std::cout << "Read AMC File Content..." << std::endl;
     std::ifstream file(path_.c_str(), std::ios::in);
 
     if(!file || !file.is_open())
@@ -78,7 +82,7 @@ bool AMCParser::ReadFileContent()
     file_content_ = buffer.str();
     
     file.close();
-    std::cout << "Load Success!\n";
+    std::cout << "AMC File Load Success!\n";
     return true;
 }
 
@@ -114,13 +118,16 @@ void AMCParser::Parse_Frames()
 
         if(line_ss.fail())
         {
+            line_ss.clear();
+            line_ss.str(line_str);    
+        
             float angle;
             std::vector<float> angles_vec;
 
             line_ss >> keyword;
             auto iter = raw_name_dof_map_.find(keyword);
             bool find_key = (iter != raw_name_dof_map_.end());
-
+            
             while(line_ss >> angle)
             {
                 angles_vec.push_back(angle);
@@ -162,7 +169,15 @@ void AMCParser::SetKeyframeStates(const std::string& key, DOF_ENUM dof_type)
             euler_rotation = glm::vec3(frame_info[3], 
                                        frame_info[4], 
                                        frame_info[5]);
-            
+            /*
+            std::cout   << "root (" << i << ")"
+                        << trans.x << " "
+                        << trans.y << " "
+                        << trans.z << " "
+                        << euler_rotation.x << " "
+                        << euler_rotation.y << " "
+                        << euler_rotation.z << "\n";
+            */
             glm::quat rot(euler_rotation);
             
             KeyframeState* frame_state = new KeyframeState(trans, rot);
@@ -174,6 +189,7 @@ void AMCParser::SetKeyframeStates(const std::string& key, DOF_ENUM dof_type)
 
     for(size_t i =0 ; i< frames.size(); ++i)
     {
+        //std::cout   << key << " (" << i << ")";
         SetKeyframeStateInfo(key, dof_type, i);
     }
     
@@ -191,58 +207,64 @@ void AMCParser::SetKeyframeStateInfo(const std::string& key,
     const std::vector<float>& frame_info = frames[idx];
 
     switch(dof_type)
+    {
+        case DOF_ENUM::DOF_NONE:
         {
-            case DOF_ENUM::DOF_NONE:
-            {
-                break;
-            }
-            case DOF_ENUM::DOF_RX:
-            {
-                euler_rotation = glm::vec3(frame_info[0], 0, 0);
-                break;
-            }
-            case DOF_ENUM::DOF_RY:
-            {
-                euler_rotation = glm::vec3(0, frame_info[0], 0);
-                break;
-            }
-            case DOF_ENUM::DOF_RZ:
-            {
-                euler_rotation = glm::vec3(0, 0, frame_info[0]);
-                break;
-            }
-            case DOF_ENUM::DOF_RX_RY:
-            {
-                euler_rotation = glm::vec3(frame_info[0], 
-                                           frame_info[1], 
-                                           0);
-                break;
-            }
-            case DOF_ENUM::DOF_RY_RZ:
-            {
-                euler_rotation = glm::vec3(0, 
-                                           frame_info[0], 
-                                           frame_info[1]);
-                break;
-            }
-            case DOF_ENUM::DOF_RX_RZ:
-            {
-                euler_rotation = glm::vec3(frame_info[0], 
-                                           0, 
-                                           frame_info[1]);
-                break;
-            }
-            case DOF_ENUM::DOF_RX_RY_RZ:
-            {
-                euler_rotation = glm::vec3(frame_info[0], 
-                                           frame_info[1], 
-                                           frame_info[2]);
-                break;
-            }
-        }        
+            break;
+        }
+        case DOF_ENUM::DOF_RX:
+        {
+            euler_rotation = glm::vec3(frame_info[0], 0, 0);
+            break;
+        }
+        case DOF_ENUM::DOF_RY:
+        {
+            euler_rotation = glm::vec3(0, frame_info[0], 0);
+            break;
+        }
+        case DOF_ENUM::DOF_RZ:
+        {
+            euler_rotation = glm::vec3(0, 0, frame_info[0]);
+            break;
+        }
+        case DOF_ENUM::DOF_RX_RY:
+        {
+            euler_rotation = glm::vec3(frame_info[0], 
+                                        frame_info[1], 
+                                        0);
+            break;
+        }
+        case DOF_ENUM::DOF_RY_RZ:
+        {
+            euler_rotation = glm::vec3(0, 
+                                        frame_info[0], 
+                                        frame_info[1]);
+            break;
+        }
+        case DOF_ENUM::DOF_RX_RZ:
+        {
+            euler_rotation = glm::vec3(frame_info[0], 
+                                        0, 
+                                        frame_info[1]);
+            break;
+        }
+        case DOF_ENUM::DOF_RX_RY_RZ:
+        {
+            euler_rotation = glm::vec3(frame_info[0], 
+                                        frame_info[1], 
+                                        frame_info[2]);
+            break;
+        }
+    }        
 
-        glm::quat rot(euler_rotation);
-            
-        KeyframeState* frame_state = new KeyframeState(trans, rot);
-        bone_keyframes_map_[key].push_back(frame_state);
+    glm::quat rot(euler_rotation);
+    //std::cout << key << " " << dof_type << "\n";
+    
+    /*
+    std::cout   << euler_rotation.x << " "
+                << euler_rotation.y << " "
+                << euler_rotation.z << "\n";
+    */
+    KeyframeState* frame_state = new KeyframeState(trans, rot);
+    bone_keyframes_map_[key].push_back(frame_state);
 }
