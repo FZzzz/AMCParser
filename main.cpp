@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include "MotionParser.h"
 #include "Character.h"
 #include "ASFParser.h"
 #include "AMCParser.h"
@@ -8,12 +9,12 @@ int main()
 {
     std::cout << "ASF/ACM Loader\n" << std::endl;
 
-    ASFParser* skeleton_parser = new ASFParser();
+    MotionParser::ASFParser* skeleton_parser = new MotionParser::ASFParser();
     skeleton_parser->ReadASF("./Asset/walk.asf");
 
-    Character* character = skeleton_parser->Create_Character();
+    MotionParser::Character* character = skeleton_parser->Create_Character();
     
-    AMCParser* anim_parser = new AMCParser();
+    MotionParser::AMCParser* anim_parser = new MotionParser::AMCParser();
     anim_parser->ReadAMC("./Asset/walk_01.amc");
     anim_parser->SetCharacterKeyFrames(character);
 
@@ -24,6 +25,10 @@ int main()
     skeleton_parser = nullptr;
     anim_parser = nullptr;
     character = nullptr;
+
+#ifdef _WIN32
+	system("pause");
+#endif 
 
     return 0;
 }

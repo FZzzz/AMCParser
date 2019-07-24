@@ -1,6 +1,7 @@
 #ifndef _ASF_PARSER_H_
 #define _ASF_PARSER_H_
 
+#include "MotionParser.h"
 #include "Character.h"
 #include <glm/common.hpp>
 #include <vector>
@@ -8,52 +9,55 @@
 #include <sstream>
 #include <map>
 
-class ASFParser
-{
-public: 
-    ASFParser();
-    ~ASFParser();
+namespace MotionParser {
 
-    void ReadASF(std::string);
+	class ASFParser
+	{
+	public:
+		ASFParser();
+		~ASFParser();
 
-    Character* Create_Character();
-    inline const std::map<std::string, BoneNode*>& GetBoneNameMap()
-    {
-        return bone_name_map_;
-    }
+		void ReadASF(std::string);
 
-private:
-    
-    bool ReadFileContent();
-    // subroutine of ReadASF()
-    void Parse_Header();
-    void Parse_Root();
-    void Parse_BoneData();
-    
-    void Determine_DOF_Types();
-    void Create_Bone_Name_Map();
+		Character* Create_Character();
+		inline const std::map<std::string, BoneNode*>& GetBoneNameMap()
+		{
+			return bone_name_map_;
+		}
 
-    void Parse_Hierarchy();
-    void FetchRelation(std::stringstream&, std::vector<BoneNode*>&, BoneNode* parent=nullptr);
+	private:
 
-    void CleanUpLimitString(std::string&);
-    void PrintHierarchy();
-    
-    std::stringstream ss_;
-    std::string path_;
-    std::string file_content_;
-    
-    std::string documentation_;
-    std::string version_;
-    std::string name_;
-    bool have_root_;
+		bool ReadFileContent();
+		// subroutine of ReadASF()
+		void Parse_Header();
+		void Parse_Root();
+		void Parse_BoneData();
 
-    Root* root_info_;
-    std::vector<BoneData*> bone_datas_;
-    std::vector<BoneNode*> bone_nodes_;
-    std::map<std::string, BoneNode*> bone_name_map_;
+		void Determine_DOF_Types();
+		void Create_Bone_Name_Map();
+
+		void Parse_Hierarchy();
+		void FetchRelation(std::stringstream&, std::vector<BoneNode*>&, BoneNode* parent = nullptr);
+
+		void CleanUpLimitString(std::string&);
+		void PrintHierarchy();
+
+		std::stringstream ss_;
+		std::string path_;
+		std::string file_content_;
+
+		std::string documentation_;
+		std::string version_;
+		std::string name_;
+		bool have_root_;
+
+		Root* root_info_;
+		std::vector<BoneData*> bone_datas_;
+		std::vector<BoneNode*> bone_nodes_;
+		std::map<std::string, BoneNode*> bone_name_map_;
 
 
-};
+	};
 
 #endif
+}

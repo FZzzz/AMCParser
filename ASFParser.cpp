@@ -4,6 +4,8 @@
 #include <iostream>
 #include <fstream>
 
+using namespace MotionParser;
+
 ASFParser::ASFParser() : have_root_(false), root_info_(nullptr)
 {
 

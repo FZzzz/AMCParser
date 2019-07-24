@@ -6,6 +6,7 @@
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+using namespace MotionParser;
 
 AMCParser::AMCParser()
 {
@@ -73,6 +74,7 @@ bool AMCParser::ReadFileContent()
 
     if(!file || !file.is_open())
     {
+		std::cout << "File Open Failed\n" << std::endl;
         return false;
     }
     
@@ -80,8 +82,7 @@ bool AMCParser::ReadFileContent()
     std::stringstream buffer;
     buffer << file.rdbuf();
     file_content_ = buffer.str();
-    
-    file.close();
+	file.close();
     std::cout << "AMC File Load Success!\n";
     return true;
 }

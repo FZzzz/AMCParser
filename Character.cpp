@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <map>
 
+using namespace MotionParser;
+
 Character::Character() : name_("Anonymous"), root_(nullptr)
 {
 
