@@ -118,6 +118,11 @@ namespace MotionParser {
 		{
 			return bone_name_map_;
 		}
+		inline const BoneNameFrameMap& GetKeyFrames()
+		{
+			return keyframes_;
+		}
+
 
 	private:
 		std::string name_;

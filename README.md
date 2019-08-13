@@ -2,7 +2,7 @@
 A Parser for ASF/AMC motion capture data. 
 
 ## Introduction
-This library is written in `c++1x`. And its output is a character with `Name-BoneData` STL map.
+This library is written in `c++1x`. And its output is a character with `BoneName-Keyframes` STL map.
 Inside the character, it saves all information parsed out from AMC/ASF files.
 
 ## How to use?
