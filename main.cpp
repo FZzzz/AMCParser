@@ -17,6 +17,7 @@ int main()
     MotionParser::AMCParser* anim_parser = new MotionParser::AMCParser();
     anim_parser->ReadAMC("./Asset/walk_01.amc");
     anim_parser->SetCharacterKeyFrames(character);
+    character->PrintHierarchy();
 
     delete skeleton_parser;
     delete anim_parser;

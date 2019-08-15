@@ -31,6 +31,35 @@ Character::~Character()
 
 }
 
+void MotionParser::Character::PrintHierarchy()
+{
+	if (root_->children.size() == 0)
+		return;
+	
+	std::cout << "Print hierarchy:\nRoot\n";
+	// print root childs
+	for (size_t i = 0; i < root_->children.size(); ++i)
+	{
+		std::cout << root_->children[i]->data->name << " ";
+		PrintHierarchyInternal(root_->children[i]);
+	}
+}
+
+void MotionParser::Character::PrintHierarchyInternal(BoneNode* node)
+{
+	std::string parent_name = (node->parent) ? node->parent->data->name : "root";
+	std::cout << parent_name << " -> " << node->data->name << "\n";
+	if (node->child.size() == 0)
+		return;
+
+	for (size_t i = 0; i < node->child.size(); ++i)
+	{
+		auto child = node->child[i];
+		PrintHierarchyInternal(child);
+	}
+	
+}
+
 void Character::SetSkeletal(const Root* const root,
                      const std::vector<BoneData*>& bone_data,
                      const std::vector<BoneNode*>& bone_node_list,
@@ -94,6 +123,15 @@ void Character::SetSkeletal(const Root* const root,
             bone_nodes_[i]->parent = parent_node;            
         }
     }
+
+    // re-create root information
+	for (size_t i = 0; i < root->children.size(); ++i)
+	{
+		std::string child_name = root->children[i]->data->name;
+		root_->children.push_back(bone_name_map_[child_name]);
+	}
+
+
 }
 
 void Character::SetKeyframes(const BoneNameFrameMap& input)

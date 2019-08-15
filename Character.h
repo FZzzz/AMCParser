@@ -106,6 +106,9 @@ namespace MotionParser {
 	public:
 		Character();
 		~Character();
+		
+		void PrintHierarchy();
+
 		void SetSkeletal(const Root* const,
 			const std::vector<BoneData*>&,
 			const std::vector<BoneNode*>&,
@@ -125,6 +128,8 @@ namespace MotionParser {
 
 
 	private:
+		void PrintHierarchyInternal(BoneNode* node);
+
 		std::string name_;
 
 		std::vector<BoneNode*> bone_nodes_;
