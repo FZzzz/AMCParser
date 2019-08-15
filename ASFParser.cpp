@@ -254,7 +254,7 @@ void ASFParser::Parse_BoneData()
                 std::string rotation_order;
 
                 line_ss >> x >> y >> z;
-                bone->euler_roataion_degree = glm::vec3(x,y,z);
+                bone->euler_rotation_degree = glm::vec3(x,y,z);
                 //std::cout << x << " " 
                 //        << y << " " 
                 //        << z << std::endl;

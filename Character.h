@@ -34,7 +34,7 @@ namespace MotionParser {
 			name(b.name),
 			direction(b.direction),
 			length(b.length),
-			euler_roataion_degree(b.euler_roataion_degree),
+			euler_rotation_degree(b.euler_rotation_degree),
 			rotation_order(b.rotation_order),
 			dof_type(b.dof_type),
 			dofs(b.dofs),
@@ -46,7 +46,7 @@ namespace MotionParser {
 		std::string name;
 		glm::vec3 direction;
 		float length;
-		glm::vec3 euler_roataion_degree;
+		glm::vec3 euler_rotation_degree;
 		std::string rotation_order;
 
 		// Map? Fixed array? Max 6
